@@ -1,2 +1,3 @@
 script_name,seed,n_train,n_val,n_test,data,domain,scale,noise_level,power,mask,cutoff,proportion,max_epochs,num_samples,weight_decay,lr,gamma,step_size,width,prior_mu,prior_sigma,final_mu,final_sigma,kl_type,last_layer_only,kl_weight
-master.py,42,1000,1000,1000,cos,"[-4.5, 4.5]",80,15,2,FALSE,1,0.9,100,300,0,1.00E-03,1,100,"[40, 60]","[0.0, 0.0]","[0.5, 0.5]",0,0.25,mean,FALSE,1
+master.py,42,1000,1000,1000,cos,"[-4.5, 4.5]",80,15,2,FALSE,1,0.9,10,300,0,1.00E-03,1,100,"[40, 60]","[0.0, 0.0]","[0.5, 0.5]",0,0.25,mean,FALSE,1
+master.py,42,1000,1000,1000,cos,"[-4.5, 4.5]",80,15,2,FALSE,1,0.9,10,300,0,1.00E-03,1,100,"[40, 60]","[0.0, 0.0]","[0.5, 0.5]",0,1,mean,FALSE,1

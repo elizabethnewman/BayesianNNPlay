@@ -9,23 +9,28 @@ import datetime
 import os
 from copy import deepcopy
 from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask
-from utils import setup_parser, get_logger, makedirs
+from utils import setup_parser, get_logger, makedirs, number_network_weights
 
 
 # setup argument parser
 parser = setup_parser()
 args = parser.parse_args()
 
-# add timestamp to save path
-sStartTime = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+# create a naming convention for saving results
+# sStartTime = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+file_details = 'kl_weight_%0.2f_final_sigma_%0.2f' % (args.kl_weight, args.final_sigma)
+
 
 # path to save results
-sPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'experiments', 'tmp')
+sPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'experiments', file_details)
 
 # logger
 makedirs(sPath)
 logger = get_logger(logpath=os.path.join(sPath, 'results.log'), filepath=os.path.abspath(__file__),
-                    saving=False, mode="w")
+                    saving=True, mode="w")
+
+logger.info(f'Bayesian Neural Network')
+logger.info(f'args: {args}')
 
 torch.manual_seed(args.seed)
 
@@ -41,6 +46,7 @@ elif args.data == 'poly':
 else:
     raise ValueError(f'Unknown data type: {args.data}')
 
+# mask data (currently only supports for masking in middle of domain)
 if args.mask:
     x, y = generate_mask(x, y, cutoff=args.cutoff, proportion=args.propotion)
 
@@ -50,11 +56,11 @@ plt.scatter(x, y, label='training points')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
-plt.show()
+plt.savefig(os.path.join(sPath, 'training_data.png'))
+# plt.show()
 
 
 #%% create network
-
 
 model = nn.ModuleList()
 
@@ -87,6 +93,19 @@ kl_loss = bnn.BKLLoss(reduction=args.kl_type, last_layer_only=args.last_layer_on
 
 optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
+
+#%% setup logger information
+logger.info("---------------------- Network ----------------------------")
+logger.info(model)
+logger.info("Number of trainable parameters: {}".format(number_network_weights(model)))
+logger.info("--------------------------------------------------")
+logger.info(str(optimizer))
+logger.info(str(scheduler))
+logger.info("dtype={:} device={:}".format(x.dtype, x.device))
+logger.info("epochs={:} ".format(args.max_epochs))
+logger.info("saveLocation = {:}".format(sPath))
+logger.info("--------------------------------------------------\n")
+
 
 #%% train
 
@@ -126,6 +145,8 @@ results['values'].append([-1,  mse + args.kl_weight * kl, mse, kl])
 logger.info((len(results['headers']) * '{:<15s}').format(*results['headers']))
 logger.info(results['frmt'].format(*results['values'][-1]))
 
+t0 = time.perf_counter()
+
 for i in range(args.max_epochs):
     unfreeze(model)
     for step in range(args.num_samples):
@@ -145,6 +166,19 @@ for i in range(args.max_epochs):
     mse, kl = evaluate(model)
     results['values'].append([i, mse + args.kl_weight * kl, mse, kl])
     logger.info(results['frmt'].format(*results['values'][-1]))
+
+t1 = time.perf_counter()
+
+if torch.cuda.is_available():
+    torch.cuda.synchronize()
+
+logger.info('Total Training Time: {:.2f} seconds'.format(t1 - t0))
+
+results['args'] = args
+torch.save(model.state_dict(), os.path.join(sPath, 'model.pth'))
+
+pd.DataFrame.to_csv(pd.DataFrame(results['values'], columns=results['headers']), os.path.join(sPath, 'results.csv'))
+
 
 
 #%% plot results
@@ -166,4 +200,4 @@ plt.scatter(x_grid, y_grid, color='r', s=10, label='training points', zorder=100
 plt.xlabel(r'$x$')
 plt.ylabel(r'$y$')
 plt.legend()
-plt.show()
+plt.savefig(os.path.join(sPath, 'approximation.png'))

@@ -84,3 +84,11 @@ def makedirs(dirname):
     """
     if not os.path.exists(dirname):
         os.makedirs(dirname)
+
+
+def number_network_weights(net):
+    n = 0
+    for p in net.parameters():
+        n += p.numel()
+
+    return n
