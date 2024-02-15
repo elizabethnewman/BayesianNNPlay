@@ -8,7 +8,7 @@ import time
 import datetime
 import os
 from copy import deepcopy
-from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask
+from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask, combine
 from utils import setup_parser, get_logger, makedirs, number_network_weights
 
 
@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 # create a naming convention for saving results
 # sStartTime = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-file_details = 'kl_weight_%0.2f_final_sigma_%0.2f' % (args.kl_weight, args.final_sigma)
+file_details = 'kl_weight_%0.2f_final_sigma_%0.2f_%s' % (args.kl_weight, args.final_sigma, args.data)
 
 
 # path to save results
@@ -43,6 +43,14 @@ if args.data == 'cos':
 elif args.data == 'poly':
     x, y = generate_polynomial_1D(n_pts=args.n_train, domain=args.domain,
                                   scale=args.scale, noise_level=args.noise_level, power=args.power, grid=False)
+elif args.data == 'combine':
+    import numpy as np
+    x_matrix = np.array([[0, 1], [2, 3], [4, 5]])  # Lower Bound
+    size_limits = x_matrix.shape
+    size = [10, 0, 10]
+    n = [50, 10, 4]
+    x, y = combine(x_matrix, n, size)
+
 else:
     raise ValueError(f'Unknown data type: {args.data}')
 

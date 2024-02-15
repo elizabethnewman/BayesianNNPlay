@@ -1,7 +1,5 @@
-
+import numpy as np
 import torch
-
-
 def generate_polynomial_1D(n_pts: int = 5000, domain: tuple = (-4.5, 4.5),
                            scale: float = 80.0, noise_level: float = 15.0, power: int = 2,
                            grid: bool = False):
@@ -81,3 +79,15 @@ def generate_mask(x, y, region: str = 'middle', cutoff: float = 0.5, proportion:
     return x, y
 
 
+def combine(limit_matrix, n, s):
+    size = limit_matrix.shape
+    x_lim_list = []
+    for i in range(size[0]):
+        row1 = np.linspace(limit_matrix[i, 0], limit_matrix[i, 1], n[i])
+        x_lim_list.append(row1)
+    x_concatenated = np.concatenate(x_lim_list)
+    x_torch = torch.unsqueeze(torch.tensor(x_concatenated), dim=1)
+    x_input = x_torch.float()
+    y_torch = s[0] * torch.pow(torch.cos(x_input), 1) + s[1] * torch.pow(torch.sin(x_input), 1) + s[2] * torch.rand(x_input.shape)  # f(x)
+    y_input = torch.unsqueeze(y_torch, dim=1)
+    return x_input, y_input
