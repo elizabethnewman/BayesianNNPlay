@@ -191,8 +191,16 @@ pd.DataFrame.to_csv(pd.DataFrame(results['values'], columns=results['headers']),
 
 #%% plot results
 
-x_grid, y_grid = generate_cos_polynomial_1D(n_pts=args.n_test, domain=args.domain,
+if args.data == 'cos':
+    x_grid, y_grid = generate_cos_polynomial_1D(n_pts=args.n_test, domain=args.domain,
+                                                scale=args.scale, noise_level=args.noise_level, power=args.power, grid=True)
+
+elif args.data == 'poly':
+    x_grid, y_grid = generate_polynomial_1D(n_pts=args.n_train, domain=args.domain,
                                             scale=args.scale, noise_level=args.noise_level, power=args.power, grid=True)
+elif args.data == 'combine':
+    x_grid, y_grid = combine(x_matrix, n, size, grid=True)
+
 
 unfreeze(model)
 

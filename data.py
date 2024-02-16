@@ -79,13 +79,19 @@ def generate_mask(x, y, region: str = 'middle', cutoff: float = 0.5, proportion:
     return x, y
 
 
-def combine(limit_matrix, n, s):
+def combine(limit_matrix, n, s, grid=False):
     size = limit_matrix.shape
-    x_lim_list = []
-    for i in range(size[0]):
-        row1 = np.linspace(limit_matrix[i, 0], limit_matrix[i, 1], n[i])
-        x_lim_list.append(row1)
-    x_concatenated = np.concatenate(x_lim_list)
+
+    if not grid:
+        x_lim_list = []
+        for i in range(size[0]):
+            row1 = np.linspace(limit_matrix[i, 0], limit_matrix[i, 1], n[i])
+            x_lim_list.append(row1)
+        x_concatenated = np.concatenate(x_lim_list)
+    else:
+        x_concatenated = [np.linspace(limit_matrix[i, 0], limit_matrix[i, 1], 100) for i in range(size[0])]
+        x_concatenated = np.concatenate(x_concatenated)
+
     x_torch = torch.unsqueeze(torch.tensor(x_concatenated), dim=1)
     x_input = x_torch.float()
     y_torch = s[0] * torch.pow(torch.cos(x_input), 1) + s[1] * torch.pow(torch.sin(x_input), 1) + s[2] * torch.rand(x_input.shape)  # f(x)
