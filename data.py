@@ -96,4 +96,4 @@ def combine(limit_matrix, n, s, grid=False):
     x_input = x_torch.float()
     y_torch = s[0] * torch.pow(torch.cos(x_input), 1) + s[1] * torch.pow(torch.sin(x_input), 1) + s[2] * torch.rand(x_input.shape)  # f(x)
     y_input = torch.unsqueeze(y_torch, dim=1)
-    return x_input, y_input
+    return x_input, y_input.squeeze(dim=-1)

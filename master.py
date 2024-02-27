@@ -45,10 +45,10 @@ elif args.data == 'poly':
                                   scale=args.scale, noise_level=args.noise_level, power=args.power, grid=False)
 elif args.data == 'combine':
     import numpy as np
-    x_matrix = np.array([[0, 1], [2, 3], [4, 5]])  # Lower Bound
+    x_matrix = np.array([[0, 1], [1, 2], [2, 3]])  # Lower Bound
     size_limits = x_matrix.shape
-    size = [10, 0, 10]
-    n = [50, 10, 4]
+    size = [10, 0, 1]
+    n = [40, 50, 10]
     x, y = combine(x_matrix, n, size)
 
 else:
@@ -65,6 +65,7 @@ plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
 plt.savefig(os.path.join(sPath, 'training_data.png'))
+plt.close()
 # plt.show()
 
 
@@ -217,3 +218,4 @@ plt.xlabel(r'$x$')
 plt.ylabel(r'$y$')
 plt.legend()
 plt.savefig(os.path.join(sPath, 'approximation.png'))
+plt.close()
