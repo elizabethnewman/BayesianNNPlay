@@ -8,7 +8,7 @@ import time
 import datetime
 import os
 from copy import deepcopy
-from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask, combine
+from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask, combine, n_filter
 from utils import setup_parser, get_logger, makedirs, number_network_weights
 
 
@@ -39,25 +39,22 @@ torch.manual_seed(args.seed)
 if args.data == 'cos':
     x, y = generate_cos_polynomial_1D(n_pts=args.n_train, domain=args.domain,
                                       scale=args.scale, noise_level=args.noise_level, power=args.power, grid=False)
-
 elif args.data == 'poly':
     x, y = generate_polynomial_1D(n_pts=args.n_train, domain=args.domain,
                                   scale=args.scale, noise_level=args.noise_level, power=args.power, grid=False)
 elif args.data == 'combine':
     import numpy as np
-    x_matrix = np.array([[0, 1], [2, 3], [4, 5]])  # Lower Bound
+    x_matrix = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])  # Lower Bound
     size_limits = x_matrix.shape
     size = [10, 0, 10]
-    n = [50, 10, 4]
-    x, y = combine(x_matrix, n, size)
-
+    n = [1000, 1000, 1000, 1000, 1000]
+    x, y = combine(x_matrix, n, gap=0,s=size)
 else:
     raise ValueError(f'Unknown data type: {args.data}')
 
 # mask data (currently only supports for masking in middle of domain)
 if args.mask:
     x, y = generate_mask(x, y, cutoff=args.cutoff, proportion=args.propotion)
-
 
 plt.figure()
 plt.scatter(x, y, label='training points')
@@ -199,7 +196,8 @@ elif args.data == 'poly':
     x_grid, y_grid = generate_polynomial_1D(n_pts=args.n_train, domain=args.domain,
                                             scale=args.scale, noise_level=args.noise_level, power=args.power, grid=True)
 elif args.data == 'combine':
-    x_grid, y_grid = combine(x_matrix, n, size, grid=True)
+    amask = generate_mask(x,y,.1)
+    x_grid, y_grid = combine(x_matrix, n, 0, size, grid=True)
 
 
 unfreeze(model)
@@ -211,7 +209,7 @@ for i in range(num_draws):
     y_predict = model(x_grid).detach()
     plt.plot(x_grid, y_predict, 'k-', linewidth=2, alpha=0.1)
 
-plt.scatter(x_grid, y_grid, color='r', s=10, label='training points', zorder=100)
+plt.scatter(x_grid, y_grid, color='y', s=1, label='training points', zorder=100)
 
 plt.xlabel(r'$x$')
 plt.ylabel(r'$y$')

@@ -22,7 +22,7 @@ def setup_parser():
     parser.add_argument('--cutoff', type=float, default=1.0, help='cutoff for mask')
     parser.add_argument('--proportion', type=float, default=0.9,
                         help='proportion of points to mask (0 = do not mask, 1 = mask all)')
-
+    parser.add_argument('--gap', type=int, default=0)
     # training
     parser.add_argument('--max_epochs', type=int, default=10, help='maximum number of epochs')
     parser.add_argument('--num_samples', type=int, default=300, help='number of samples drawn per epoch')

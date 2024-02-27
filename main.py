@@ -73,29 +73,7 @@ x_test = torch.unsqueeze(x_test, dim=1)
 y_test = torch.unsqueeze(y_test, dim=1)
 
 # Display Results
+from results import model_attempts
 
-plt.xlabel(r'$x$')
-plt.ylabel(r'$y$')
+model_attempts(x_test,y_test,model)
 
-plt.scatter(x_test.data.numpy(), y_test.data.numpy(), color='k', s=2)
-
-y_predict = model(x_test)
-plt.plot(x_test.data.numpy(), y_predict.data.numpy(), 'r-', linewidth=5, label='First Prediction')
-
-y_predict = model(x_test)
-plt.plot(x_test.data.numpy(), y_predict.data.numpy(), 'b-', linewidth=5, label='Second Prediction')
-
-y_predict = model(x_test)
-plt.plot(x_test.data.numpy(), y_predict.data.numpy(), 'g-', linewidth=5, label='Third Prediction')
-y_predict = model(x_test)
-plt.plot(x_test.data.numpy(), y_predict.data.numpy(), 'y-', linewidth=5, label='Fourth Prediction')
-y_predict = model(x_test)
-plt.plot(x_test.data.numpy(), y_predict.data.numpy(), 'm-', linewidth=5, label='Fifth Prediction')
-y_predict = model(x_test)
-plt.plot(x_test.data.numpy(), y_predict.data.numpy(), 'k-', linewidth=5, label='Sixth Prediction')
-
-
-
-plt.legend()
-
-plt.show()
