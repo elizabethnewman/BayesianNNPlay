@@ -8,8 +8,9 @@ import time
 import datetime
 import os
 from copy import deepcopy
-from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask, combine, n_filter
+from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask, combine, generate_sinosoidal_polynomial_1D
 from utils import setup_parser, get_logger, makedirs, number_network_weights
+
 
 
 # setup argument parser
@@ -18,7 +19,7 @@ args = parser.parse_args()
 
 # create a naming convention for saving results
 # sStartTime = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-file_details = 'kl_weight_%0.2f_final_sigma_%0.2f_%s' % (args.kl_weight, args.final_sigma, args.data)
+file_details = '%s' % args.data
 
 
 # path to save results
@@ -42,30 +43,27 @@ if args.data == 'cos':
 elif args.data == 'poly':
     x, y = generate_polynomial_1D(n_pts=args.n_train, domain=args.domain,
                                   scale=args.scale, noise_level=args.noise_level, power=args.power, grid=False)
-elif args.data == 'combine':
-    import numpy as np
-    x_matrix = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])  # Lower Bound
-    size_limits = x_matrix.shape
-    size = [10, 0, 10]
-    n = [1000, 1000, 1000, 1000, 1000]
-    x, y = combine(x_matrix, n, gap=0,s=size)
+elif args.data == 'sinc':
+    x, y = generate_sinosoidal_polynomial_1D(n_pts=args.n_train, domain=args.domain,
+                                  scale=args.scale, noise_level=args.noise_level, power=args.power, grid=False)
 else:
     raise ValueError(f'Unknown data type: {args.data}')
 
 # mask data (currently only supports for masking in middle of domain)
+
 if args.mask:
-    x, y = generate_mask(x, y, cutoff=args.cutoff, proportion=args.propotion)
+    x, y = generate_mask(x, y, .1, cutoff=args.cutoff, proportion=args.proportion, region='left')
 
 plt.figure()
-plt.scatter(x, y, label='training points')
+plt.scatter(x, y, label='Training Points')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
 plt.savefig(os.path.join(sPath, 'training_data.png'))
 plt.close()
 # plt.show()
-
-
+#print(x)
+#print(x.shape)
 #%% create network
 
 model = nn.ModuleList()
@@ -129,7 +127,7 @@ def unfreeze(model):
             layer.unfreeze()
 
 
-def evaluate(model):
+def evaluate(model,):
     with torch.no_grad():
         model.eval()
         freeze(model)
@@ -146,7 +144,7 @@ results = {'headers': ('epoch', 'f', 'mse', 'kl'),
 
 # initial evaluation
 mse, kl = evaluate(model)
-results['values'].append([-1,  mse + args.kl_weight * kl, mse, kl])
+results['values'].append([-1, mse + args.kl_weight * kl, mse, args.kl_weight * kl])
 
 logger.info((len(results['headers']) * '{:<15s}').format(*results['headers']))
 logger.info(results['frmt'].format(*results['values'][-1]))
@@ -169,6 +167,7 @@ for i in range(args.max_epochs):
     scheduler.step()
 
     # evaluate and store results
+
     mse, kl = evaluate(model)
     results['values'].append([i, mse + args.kl_weight * kl, mse, kl])
     logger.info(results['frmt'].format(*results['values'][-1]))
@@ -196,10 +195,9 @@ if args.data == 'cos':
 elif args.data == 'poly':
     x_grid, y_grid = generate_polynomial_1D(n_pts=args.n_train, domain=args.domain,
                                             scale=args.scale, noise_level=args.noise_level, power=args.power, grid=True)
-elif args.data == 'combine':
-    amask = generate_mask(x,y,.1)
-    x_grid, y_grid = combine(x_matrix, n, 0, size, grid=True)
-
+elif args.data == 'sinc':
+    x_grid, y_grid = generate_sinosoidal_polynomial_1D(n_pts=args.n_train, domain=args.domain,
+                                            scale=args.scale, noise_level=args.noise_level, power=args.power, grid=True)
 
 unfreeze(model)
 
@@ -210,10 +208,12 @@ for i in range(num_draws):
     y_predict = model(x_grid).detach()
     plt.plot(x_grid, y_predict, 'k-', linewidth=2, alpha=0.1)
 
-plt.scatter(x_grid, y_grid, color='y', s=1, label='training points', zorder=100)
+plt.scatter(x_grid, y_grid, color='r', s=1, label='training points', zorder=100)
 
 plt.xlabel(r'$x$')
 plt.ylabel(r'$y$')
 plt.legend()
 plt.savefig(os.path.join(sPath, 'approximation.png'))
 plt.close()
+
+#cost_plotter(sPath)
