@@ -14,7 +14,7 @@ def setup_parser():
     parser.add_argument('--n_val', type=int, default=1000, help='number of validation points')
     parser.add_argument('--n_test', type=int, default=1000, help='number of test points')
     parser.add_argument('--data', type=str, default='cos', help='type of data')
-    parser.add_argument('--domain', type=float, nargs=2, default=[0, 5], help='domain of function')
+    parser.add_argument('--domain', type=float, nargs=2, default=[1, 5], help='domain of function')
     parser.add_argument('--scale', type=float, default=80.0, help='scale of function')
     parser.add_argument('--noise_level', type=float, default=15.0, help='noise added to function')
     parser.add_argument('--power', type=int, default=1, help='power of function')

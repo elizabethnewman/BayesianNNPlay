@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from master import evaluate, model, sPath
-
+from data import comb, generate_mask
 
 
 def train_plotter(sPath, num_draws, x_grid, y_grid):
@@ -65,9 +65,14 @@ def cost_plotter(sPath):
 # Example usage:
 
 
-def heatmap_plotter(mapsize,f,sPath):
+def heatmap_plotter(x,y,mapsize,f,sPath):
     harvest = np.zeros((mapsize, mapsize))
 
+    store = comb(x, 3)
+
+    xn,yn = generate_mask(x, y, .1, 'middle', .05, .05)
+
+    print(xn,yn)
     for i in range(mapsize):
         mse, kl = evaluate(model)
         #harvest[i, :] = kl
@@ -83,7 +88,7 @@ def heatmap_plotter(mapsize,f,sPath):
     plt.close
 
 
-heatmap_plotter(5,0, sPath)
+
 cost_plotter(sPath)
 #i want to relate the idea of kl for each model but im not sure what to
 # plot it against because I only have an evaluation of cost. So what
@@ -100,6 +105,8 @@ cost_plotter(sPath)
 
 # CONFIRM MASK WORKS
 # FIX COMBINE
+
+    #
 # CREATE CSV READER FOR result.csv
 
 

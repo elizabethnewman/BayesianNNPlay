@@ -130,29 +130,34 @@ def generate_mask(x, y, ep, region: str = 'middle', cutoff: float = 0.5, proport
     return xn, yn
 
 
-def combine(n, gap, domain, grid=False):
-    # obtains shape of x
+def comb(x, step, grid=False):
+    x_min = x.min()
+    x_max = x.max()
+    first = (x_max - x_min) / step
+    store = np.zeros((2, step), dtype=float)
+    for i in range(step):
+        print(i)
+        cutoff = x_min + first
+        bottom = x[x < cutoff]
+        x_min = cutoff
 
-    if 0 != gap:
-        if grid == True:
-            domain = tuple(-4.5, 4.5)
+        store[1, i] = torch.max(bottom)
 
-    # discrete or continuous domain
-    if grid:
-        x = torch.linspace(domain[0], domain[1], n)
-    else:
-        x = torch.rand(n) * (domain[1] - domain[0]) + domain[0]
+    end = store[1]
 
-    # if testing, filtering data can be done here
-    #if test == True:
-        #sift = any_filter(n, domain, limit)
-    # To split data
+    limit = np.zeros((2, len(end) + 1), dtype=float)
+    for i in range(len(end)):
+        limit[0,i+1] = end[i]
+        limit[1,i] = end[i]
+    limit[0, 0] = x.min()
+    limit[1,-1] = x.max()
 
-    x_input = x_torch.float()
-    y_torch = s[0] * torch.pow(torch.cos(x_input), 1) + s[1] * torch.pow(torch.sin(x_input), 1) + s[2] * torch.rand(
-        x_input.shape)  # f(x)
-    y_input = torch.unsqueeze(y_torch, dim=1)
-    return x_input, y_input.squeeze(dim=-1)
+
+    return limit
+
+
+
+
 
 
 def any_filter(any, size, threshold, value, limit):

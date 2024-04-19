@@ -8,7 +8,7 @@ import time
 import datetime
 import os
 from copy import deepcopy
-from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask, combine, generate_sinosoidal_polynomial_1D
+from data import generate_polynomial_1D, generate_cos_polynomial_1D, generate_mask, comb, generate_sinosoidal_polynomial_1D
 from utils import setup_parser, get_logger, makedirs, number_network_weights
 
 
@@ -54,6 +54,7 @@ else:
 if args.mask:
     x, y = generate_mask(x, y, .1, cutoff=args.cutoff, proportion=args.proportion, region='left')
 
+store = comb(x,3)
 plt.figure()
 plt.scatter(x, y, label='Training Points')
 plt.xlabel('x')
@@ -62,6 +63,8 @@ plt.legend()
 plt.savefig(os.path.join(sPath, 'training_data.png'))
 plt.close()
 # plt.show()
+print("store:")
+print(store)
 #print(x)
 #print(x.shape)
 #%% create network
@@ -217,3 +220,4 @@ plt.savefig(os.path.join(sPath, 'approximation.png'))
 plt.close()
 
 #cost_plotter(sPath)
+
